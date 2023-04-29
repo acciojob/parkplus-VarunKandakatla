@@ -37,7 +37,7 @@ public class ReservationServiceImpl implements ReservationService {
             parkingLot=parkingLotRepository3.findById(parkingLotId).get();
         }catch (Exception e)
         {
-            throw new Exception("reservation cannot be made");
+            throw new Exception("Cannot make reservation");
         }
 
         Spot spot;
