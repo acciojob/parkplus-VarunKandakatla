@@ -74,7 +74,7 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
 
-            throw new Exception("reservation cannot be made");
+            throw new Exception("Cannot make reservation");
 
 
     }
