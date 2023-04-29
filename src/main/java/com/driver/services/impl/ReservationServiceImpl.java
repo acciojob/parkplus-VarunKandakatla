@@ -9,6 +9,7 @@ import com.driver.services.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -21,8 +22,71 @@ public class ReservationServiceImpl implements ReservationService {
     ReservationRepository reservationRepository3;
     @Autowired
     ParkingLotRepository parkingLotRepository3;
+
+    @Autowired
+    PaymentServiceImpl paymentService;
     @Override
     public Reservation reserveSpot(Integer userId, Integer parkingLotId, Integer timeInHours, Integer numberOfWheels) throws Exception {
 
+        User user;
+        ParkingLot parkingLot;
+
+        try
+        {
+            user= userRepository3.findById(userId).get();
+            parkingLot=parkingLotRepository3.findById(parkingLotId).get();
+        }catch (Exception e)
+        {
+            throw new Exception("reservation cannot be made");
+        }
+
+        Spot spot=null;
+
+        List<Spot> spotsList=parkingLot.getSpotList();
+
+        //Sorting
+        Collections.sort(spotsList,(a,b)->a.getPricePerHour()-b.getPricePerHour());
+
+        //Checking whether the spot is available or not
+        for(Spot spot1 : spotsList)
+        {
+            if(spot1.isOccupied()==false && Check(spot1,numberOfWheels)==true)
+            {
+                spot=spot1;
+                break;
+            }
+        }
+
+        //If not available
+        if(spot==null)
+        {
+            throw new Exception("reservation cannot be made");
+        }
+
+        //Make reservation
+        Reservation reservation = new Reservation();
+        reservation.setSpot(spot);
+        reservation.setUser(user);
+//        reservation.setPayment(payment);
+
+        return reservationRepository3.save(reservation);
+    }
+
+    public boolean Check(Spot spot, int numberOfWheels)
+    {
+        if(spot.getSpotType().equals(SpotType.TWO_WHEELER) && numberOfWheels<=2)
+        {
+            return true;
+        }
+        else if(spot.getSpotType().equals(SpotType.FOUR_WHEELER) && numberOfWheels<=4)
+        {
+            return true;
+        }
+        else if(spot.getSpotType().equals(SpotType.OTHERS))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
