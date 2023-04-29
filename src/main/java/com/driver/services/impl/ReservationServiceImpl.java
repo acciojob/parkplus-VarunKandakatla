@@ -40,7 +40,7 @@ public class ReservationServiceImpl implements ReservationService {
             throw new Exception("reservation cannot be made");
         }
 
-        Spot spot=null;
+        Spot spot;
 
         List<Spot> spotsList=parkingLot.getSpotList();
 
@@ -52,24 +52,31 @@ public class ReservationServiceImpl implements ReservationService {
         {
             if(spot1.isOccupied()==false && Check(spot1,numberOfWheels)==true)
             {
-                spot=spot1;
-                break;
+                //Make reservation
+                Reservation reservation = new Reservation();
+                //make Payment
+                Payment payment;
+                int amount=spot1.getPricePerHour()*timeInHours;
+                try
+                {
+                    payment=paymentService.pay(reservation.getId(),amount,"upi");
+                }catch (Exception e)
+                {
+                    throw new Exception(e);
+                }
+
+                reservation.setSpot(spot1);
+                reservation.setUser(user);
+                reservation.setPayment(payment);
+
+                return reservationRepository3.save(reservation);
             }
         }
 
-        //If not available
-        if(spot==null)
-        {
+
             throw new Exception("reservation cannot be made");
-        }
 
-        //Make reservation
-        Reservation reservation = new Reservation();
-        reservation.setSpot(spot);
-        reservation.setUser(user);
-//        reservation.setPayment(payment);
 
-        return reservationRepository3.save(reservation);
     }
 
     public boolean Check(Spot spot, int numberOfWheels)
