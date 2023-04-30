@@ -54,20 +54,13 @@ public class ReservationServiceImpl implements ReservationService {
             {
                 //Make reservation
                 Reservation reservation = new Reservation();
-                //make Payment
-                Payment payment;
-                int amount=spot1.getPricePerHour()*timeInHours;
-                try
-                {
-                    payment=paymentService.pay(reservation.getId(),amount,"upi");
-                }catch (Exception e)
-                {
-                    throw new Exception(e);
-                }
-
                 reservation.setSpot(spot1);
                 reservation.setUser(user);
-                reservation.setPayment(payment);
+
+                user.getReservationList().add(reservation);
+                spot1.setOccupied(true);
+                spot1.getReservationList().add(reservation);
+                parkingLotRepository3.save(parkingLot);
 
                 return reservationRepository3.save(reservation);
             }
