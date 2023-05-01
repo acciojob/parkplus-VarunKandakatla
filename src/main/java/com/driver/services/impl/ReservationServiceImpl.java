@@ -40,35 +40,37 @@ public class ReservationServiceImpl implements ReservationService {
             throw new Exception("Cannot make reservation");
         }
 
-        Spot spot;
+      List<Spot> spots=parkingLot.getSpotList();
 
-        List<Spot> spotsList=parkingLot.getSpotList();
+        Collections.sort(spots,(a,b)-> a.getPricePerHour()-b.getPricePerHour());
 
-        //Sorting
-        Collections.sort(spotsList,(a,b)->a.getPricePerHour()-b.getPricePerHour());
+        Spot spot=null;
 
-        //Checking whether the spot is available or not
-        for(Spot spot1 : spotsList)
+        for(Spot spot1 : spots)
         {
-            if(spot1.isOccupied()==false && Check(spot1,numberOfWheels)==true)
+            if(spot1.isOccupied()==false && Check(spot1,numberOfWheels))
             {
-                //Make reservation
-                Reservation reservation = new Reservation();
-                reservation.setSpot(spot1);
-                reservation.setUser(user);
-
-                user.getReservationList().add(reservation);
-                spot1.setOccupied(true);
-                spot1.getReservationList().add(reservation);
-                parkingLotRepository3.save(parkingLot);
-
-                return reservationRepository3.save(reservation);
+                spot=spot1;
+                break;
             }
         }
 
-
+        if(spot==null)
+        {
             throw new Exception("Cannot make reservation");
+        }
 
+        //RESERVATION
+        Reservation reservation = new Reservation();
+        spot.setOccupied(true);
+        spot.getReservationList().add(reservation);
+
+        reservation.setSpot(spot);
+        reservation.setUser(user);
+
+        user.getReservationList().add(reservation);
+
+        return reservationRepository3.save(reservation);
 
     }
 
